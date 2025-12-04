@@ -1,4 +1,4 @@
-# global options
+# Global options
 {
 	admin off
 	persist_config off
@@ -25,102 +25,24 @@
 	unhealthy_request_count 200
 }
 
-:{$PORT} {
-	log {
-		format json
-	}
-
-	handle_path {$BACKEND_PATH:/api}/* {
-		reverse_proxy {
-			dynamic a {
-				name {$BACKEND_DOMAIN}
-				port {$BACKEND_PORT}
-				refresh 1s
-				dial_timeout 30s
-				versions ipv4 ipv6
-			}
-			import lb_settings
-			import passive_health_checks
-			header_up Host {upstream_hostport}
+# Reusable backend reverse-proxy block
+(backend_proxy) {
+	reverse_proxy {
+		dynamic a {
+			name {$BACKEND_DOMAIN}
+			port {$BACKEND_PORT}
+			refresh 1s
+			dial_timeout 30s
+			versions ipv4 ipv6
 		}
+		import lb_settings
+		import passive_health_checks
+		header_up Host {upstream_hostport}
 	}
+}
 
-	handle /dashboard {
-		reverse_proxy {
-			dynamic a {
-				name {$BACKEND_DOMAIN}
-				port {$BACKEND_PORT}
-				refresh 1s
-				dial_timeout 30s
-				versions ipv4 ipv6
-			}
-			import lb_settings
-			import passive_health_checks
-			header_up Host {upstream_hostport}
-		}
-	}
-
-	handle /dashboard/* {
-		reverse_proxy {
-			dynamic a {
-				name {$BACKEND_DOMAIN}
-				port {$BACKEND_PORT}
-				refresh 1s
-				dial_timeout 30s
-				versions ipv4 ipv6
-			}
-			import lb_settings
-			import passive_health_checks
-			header_up Host {upstream_hostport}
-		}
-	}
-
-	handle /questions {
-		reverse_proxy {
-			dynamic a {
-				name {$BACKEND_DOMAIN}
-				port {$BACKEND_PORT}
-				refresh 1s
-				dial_timeout 30s
-				versions ipv4 ipv6
-			}
-			import lb_settings
-			import passive_health_checks
-			header_up Host {upstream_hostport}
-		}
-	}
-
-	handle /auth {
-		reverse_proxy {
-			dynamic a {
-				name {$BACKEND_DOMAIN}
-				port {$BACKEND_PORT}
-				refresh 1s
-				dial_timeout 30s
-				versions ipv4 ipv6
-			}
-			import lb_settings
-			import passive_health_checks
-			header_up Host {upstream_hostport}
-		}
-	}
-
-	handle /auth/* {
-		reverse_proxy {
-			dynamic a {
-				name {$BACKEND_DOMAIN}
-				port {$BACKEND_PORT}
-				refresh 1s
-				dial_timeout 30s
-				versions ipv4 ipv6
-			}
-			import lb_settings
-			import passive_health_checks
-			header_up Host {upstream_hostport}
-		}
-	}
-
-	# Frontend proxy - must come last as it matches everything
+# Reusable frontend reverse-proxy block
+(frontend_proxy) {
 	reverse_proxy {
 		dynamic a {
 			name {$FRONTEND_DOMAIN}
@@ -132,5 +54,34 @@
 		import lb_settings
 		import passive_health_checks
 		header_up Host {upstream_hostport}
+	}
+}
+
+# Main server
+:{$PORT} {
+
+	log {
+		format json
+	}
+
+	handle_path {$BACKEND_PATH:/api}/* {
+		import backend_proxy
+	}
+
+	handle_path /dashboard* {
+		import backend_proxy
+	}
+
+	handle_path /questions* {
+		import backend_proxy
+	}
+
+	handle_path /auth* {
+		import backend_proxy
+	}
+
+	# Fallback: all unmatched routes go to frontend
+	handle {
+		import frontend_proxy
 	}
 }
