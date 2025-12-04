@@ -68,6 +68,10 @@
 		import backend_proxy
 	}
 
+	handle /assets* {
+		import backend_proxy
+	}
+
 	handle /dashboard* {
 		import backend_proxy
 	}
