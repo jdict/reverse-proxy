@@ -64,19 +64,19 @@
 		format json
 	}
 
-	handle_path {$BACKEND_PATH:/api}/* {
+	handle {$BACKEND_PATH:/api}/* {
 		import backend_proxy
 	}
 
-	handle_path /dashboard* {
+	handle /dashboard* {
 		import backend_proxy
 	}
 
-	handle_path /questions* {
+	handle /questions* {
 		import backend_proxy
 	}
 
-	handle_path /auth* {
+	handle /auth* {
 		import backend_proxy
 	}
 
