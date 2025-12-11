@@ -8,6 +8,8 @@ export FRONTEND_PORT=${FRONTEND_PORT:-${FRONTEND_HOST##*:}}
 
 export BACKEND_DOMAIN=${BACKEND_DOMAIN:-${BACKEND_HOST%:*}}
 export BACKEND_PORT=${BACKEND_PORT:-${BACKEND_HOST##*:}}
+export S3_BUCKET=${S3_BUCKET:-blank}
+export S3_REGION=${S3_REGION:-ap-southeast-1}
 
 # strip https:// or https:// from domain if necessary
 FRONTEND_DOMAIN=${FRONTEND_DOMAIN##*://}

@@ -57,6 +57,19 @@
 	}
 }
 
+# Reusable S3 CDN reverse-proxy block
+(s3_proxy) {
+	reverse_proxy {
+		to {$S3_BUCKET}.s3.{$S3_REGION:ap-southeast-1}.amazonaws.com:443
+		transport http {
+			tls
+		}
+		header_up Host {$S3_BUCKET}.s3.{$S3_REGION:ap-southeast-1}.amazonaws.com
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+	}
+}
+
 # Main server
 :{$PORT} {
 
@@ -84,7 +97,10 @@
 		import backend_proxy
 	}
 
-	# Fallback: all unmatched routes go to frontend
+	handle /cdn/* {
+		import s3_proxy
+	}
+
 	handle {
 		import frontend_proxy
 	}
